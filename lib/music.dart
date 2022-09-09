@@ -4,6 +4,28 @@ import 'package:flutter/material.dart';
 import 'package:audioplayers/audioplayers.dart';
 import 'package:flutter/cupertino.dart';
 
+void main() {
+  runApp(const MyApp());
+}
+
+class MyApp extends StatelessWidget {
+  const MyApp({Key? key}) : super(key: key);
+
+  // This widget is the root of your application.
+  @override
+  Widget build(BuildContext context) {
+    return MaterialApp(
+      debugShowCheckedModeBanner: false,
+      title: '',
+      theme: ThemeData(
+        primarySwatch: Colors.blue,
+      ),
+      home: const MusicPlayer(),
+    );
+  }
+}
+
+// stf or statefulW
 class MusicPlayer extends StatefulWidget {
   const MusicPlayer({Key? key}) : super(key: key);
 
@@ -13,15 +35,28 @@ class MusicPlayer extends StatefulWidget {
 
 class _MusicPlayerState extends State<MusicPlayer> {
   AudioPlayer audioPlayer = AudioPlayer();
+  Duration duration = Duration.zero;
+  Duration position = Duration.zero;
 
-  // @override
-  // void dispose() {
-  //   audioPlayer.dispose();
-  //   super.dispose();
-  // }
-
-  // Duration duration = Duration.zero;
-  // Duration position = Duration.zero;
+  @override
+  void initState() {
+    super.initState();
+    audioPlayer.onPlayerStateChanged.listen((state) {
+      setState(() {
+        play_pause = state == PlayerState.PLAYING;
+      });
+    });
+    audioPlayer.onDurationChanged.listen((newDuration) {
+      setState(() {
+        duration = newDuration;
+      });
+    });
+    audioPlayer.onAudioPositionChanged.listen((newPosition) {
+      setState(() {
+        position = newPosition;
+      });
+    });
+  }
 
   String title = "Thunder";
   String singer = "Song by Imagine Dragon";
@@ -29,7 +64,7 @@ class _MusicPlayerState extends State<MusicPlayer> {
 
   // ignore: non_constant_identifier_names
   bool play_pause = false;
-  var result = 0;
+  var result = 6;
 
   List playlist = [
     {
@@ -146,9 +181,23 @@ class _MusicPlayerState extends State<MusicPlayer> {
         if (result == 6) {
           result = 0;
         }
-        print(result);
+        url = playlist[result]['song'];
+        change();
       }
       result++;
+    });
+  }
+
+  void previousSongs() {
+    setState(() {
+      if (result <= playlist.length) {
+        result = result - 1;
+        if (result == -1) {
+          result = 6;
+        }
+        url = playlist[result]['song'];
+        change();
+      }
     });
   }
 
@@ -156,8 +205,8 @@ class _MusicPlayerState extends State<MusicPlayer> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text("Welcome to Music Player"),
-        // backgroundColor: Colors.black45,
+        title: const Text("Music Player"),
+        backgroundColor: Colors.black45,
         centerTitle: true,
       ),
       body: Center(
@@ -187,13 +236,11 @@ class _MusicPlayerState extends State<MusicPlayer> {
               height: 10,
             ),
             Text(singer),
-            // Slider(
-            //     min: 0,
-            //     max: duration.inSeconds.toDouble(),
-            //     value: position.inSeconds.toDouble(),
-            //     onChanged: (value) async {
-
-            //     }),
+            Slider(
+                min: 0,
+                max: duration.inSeconds.toDouble(),
+                value: position.inSeconds.toDouble(),
+                onChanged: (value) async {}),
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceAround,
               children: [
@@ -210,7 +257,7 @@ class _MusicPlayerState extends State<MusicPlayer> {
                 ),
                 TextButton(
                   onPressed: () {
-                    // previousSongs();
+                    previousSongs();
                   },
                   child: const Padding(
                     padding: EdgeInsets.only(left: 5),
@@ -278,4 +325,3 @@ class _MusicPlayerState extends State<MusicPlayer> {
     );
   }
 }
-
